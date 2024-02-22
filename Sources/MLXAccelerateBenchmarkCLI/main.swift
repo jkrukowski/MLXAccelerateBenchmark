@@ -1,0 +1,5 @@
+import Benchmark
+import MLXAccelerateBenchmark
+import MLXAccelerateBenchmarkSuite
+
+Benchmark.main(MLXAccelerateBenchmarkSuite.allBenchmarks)

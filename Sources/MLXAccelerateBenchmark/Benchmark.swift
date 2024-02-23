@@ -2,14 +2,32 @@ import Accelerate
 import CoreML
 import MLX
 
+public func logSoftmax(_ arr: MLXArray) -> MLXArray {
+    MLX.log(MLX.softMax(arr))
+}
+
+public let logSoftmaxCompiled = MLX.compile(logSoftmax)
+
 public extension MLMultiArray {
     func mlx_sumOfProbabilityOverTimestamps(timeTokenBegin: Int) -> (Float, Float) {
         let ptr = UnsafeRawBufferPointer(
             start: dataPointer,
             count: count * MemoryLayout<Float>.stride
         )
-        let logits = MLXArray(ptr, shape.map { $0.intValue }, type: Float.self)
-        let logProbs = log(softMax(logits))
+        let logits = MLXArray(ptr, shape.map(\.intValue), type: Float.self)
+        let logProbs = logSoftmax(logits)
+        let timestampLogProb = logProbs[timeTokenBegin...].logSumExp()
+        let maxTextTokenLogProb = logProbs[..<timeTokenBegin].max()
+        return (timestampLogProb.item(), maxTextTokenLogProb.item())
+    }
+
+    func mlx_sumOfProbabilityOverTimestampsCompiled(timeTokenBegin: Int) -> (Float, Float) {
+        let ptr = UnsafeRawBufferPointer(
+            start: dataPointer,
+            count: count * MemoryLayout<Float>.stride
+        )
+        let logits = MLXArray(ptr, shape.map(\.intValue), type: Float.self)
+        let logProbs = logSoftmaxCompiled(logits)
         let timestampLogProb = logProbs[timeTokenBegin...].logSumExp()
         let maxTextTokenLogProb = logProbs[..<timeTokenBegin].max()
         return (timestampLogProb.item(), maxTextTokenLogProb.item())

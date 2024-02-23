@@ -14,7 +14,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/google/swift-benchmark", from: "0.1.0"),
-        .package(url: "https://github.com/ml-explore/mlx-swift", branch: "main"),
+        .package(url: "https://github.com/ml-explore/mlx-swift", from: "0.10.0"),
     ],
     targets: [
         .executableTarget(
